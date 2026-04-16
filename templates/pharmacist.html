@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>لوحة الصيدلي</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+
+body{
+    background:#f5f7fb;
+}
+
+.card-shadow{
+    border-radius:15px;
+    transition:0.3s;
+}
+
+.card-shadow:hover{
+    transform:translateY(-3px);
+}
+
+.btn-green{
+    background:#198754;
+    color:white;
+}
+
+.btn-green:hover{
+    background:#157347;
+}
+
+.low-stock{
+    color:red;
+    font-weight:bold;
+}
+
+</style>
+
+</head>
+
+<body>
+
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-dark bg-success shadow mb-4">
+<div class="container">
+
+<span class="navbar-brand fw-bold">
+💊 لوحة الصيدلي
+</span>
+
+<div>
+
+<a href="{{ url_for('pharmacist_orders') }}"
+class="btn btn-warning position-relative me-2">
+
+📦 الطلبات
+
+{% if notifications_orders > 0 %}
+<span class="position-absolute top-0 start-100 translate-middle badge bg-danger">
+{{ notifications_orders }}
+</span>
+{% endif %}
+
+</a>
+
+
+<a href="{{ url_for('supply_requests') }}"
+class="btn btn-dark position-relative me-2">
+
+🧾 طلبات التوفير
+
+{% if notifications_supply > 0 %}
+<span class="position-absolute top-0 start-100 translate-middle badge bg-danger">
+{{ notifications_supply }}
+</span>
+{% endif %}
+
+</a>
+
+<a href="{{ url_for('reports') }}"
+class="btn btn-light">
+📊 التقارير المالية
+</a>
+
+<a href="{{ url_for('logout') }}"
+class="btn btn-danger">
+🚪 خروج
+</a>
+
+</div>
+</div>
+</nav>
+
+
+<div class="container">
+
+
+<!-- إضافة دواء -->
+<div class="card p-4 shadow mb-4">
+
+<h4 class="text-center text-success mb-3">
+➕ إضافة دواء
+</h4>
+
+<form method="POST">
+
+<input name="name"
+class="form-control mb-2"
+placeholder="اسم الدواء"
+required>
+
+<input name="price"
+class="form-control mb-2"
+placeholder="السعر"
+required>
+
+<input name="quantity"
+type="number"
+class="form-control mb-3"
+placeholder="الكمية"
+required>
+
+<button class="btn btn-green w-100">
+إضافة الدواء
+</button>
+
+</form>
+
+</div>
+
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% for category, message in messages %}
+
+<div class="alert alert-{{category}}">
+{{ message }}
+</div>
+
+{% endfor %}
+{% endwith %}
+
+
+
+<!-- البحث -->
+<form method="GET" class="mb-4 d-flex">
+
+<input type="text"
+name="search"
+class="form-control me-2"
+placeholder="🔎 البحث عن دواء"
+value="{{ search or '' }}">
+
+<button class="btn btn-success">
+بحث
+</button>
+
+</form>
+
+
+
+<!-- قائمة الأدوية -->
+<h4 class="text-center mb-3">📋 أدويتي</h4>
+
+{% if drugs %}
+
+<div class="table-responsive">
+
+<table class="table table-bordered text-center bg-white shadow">
+
+<thead class="table-dark">
+
+<tr>
+<th>الدواء</th>
+<th>السعر</th>
+<th>الكمية</th>
+<th>تحكم</th>
+</tr>
+
+</thead>
+
+<tbody>
+
+{% for d in drugs %}
+
+<tr>
+
+<td>{{ d.name }}</td>
+
+<td class="text-success fw-bold">
+{{ d.price }}
+</td>
+
+<td>
+
+{% if d.quantity < 10 %}
+
+<span class="low-stock">
+⚠ {{ d.quantity }} (مخزون منخفض)
+</span>
+
+{% else %}
+
+{{ d.quantity }}
+
+{% endif %}
+
+</td>
+
+
+<td>
+
+<!-- تعديل الكمية -->
+<form method="POST" action="{{ url_for('update_drug') }}" class="d-inline">
+
+<input type="hidden" name="drug_id" value="{{ d.id }}">
+
+<input name="quantity"
+type="number"
+class="form-control form-control-sm mb-1"
+placeholder="تعديل الكمية"
+required>
+
+<button class="btn btn-sm btn-success">
+تحديث
+</button>
+
+</form>
+
+
+<!-- حذف -->
+<form method="POST" action="{{ url_for('delete_drug') }}" class="d-inline">
+
+<input type="hidden" name="drug_id" value="{{ d.id }}">
+
+<button class="btn btn-sm btn-danger">
+حذف
+</button>
+
+</form>
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+{% else %}
+
+<div class="alert alert-warning text-center">
+لا توجد أدوية
+</div>
+
+{% endif %}
+
+</div>
+
+</body>
+</html>

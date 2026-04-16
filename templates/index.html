@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>صيدليتي</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+body { background:#f5f7fb; }
+.card-pharmacy { border-radius:15px; transition:0.3s; height:100%; }
+.card-pharmacy:hover { transform:translateY(-5px); }
+.search-box { border-radius:30px; padding:10px; }
+.btn-book { background:#6f42c1; color:white; border-radius:20px; }
+.btn-book:hover { background:#5936a2; }
+.carousel-inner>.carousel-item>.p-2 { background:#f8f9fa; border-radius:10px; }
+.address-field { margin-top:5px; }
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-success shadow">
+  <div class="container">
+    <a class="navbar-brand fw-bold">💊 صيدليتي</a>
+
+    <div class="d-flex align-items-center">
+      {% if not session.get('user_id') %}
+        <a href="{{ url_for('register_pharmacist') }}" class="btn btn-light me-2">
+          👤 تسجيل دخول صيدلي
+        </a>
+
+        <a href="{{ url_for('register_user') }}" class="btn btn-primary">
+          📝 تسجيل مستخدم
+        </a>
+
+      {% else %}
+        <span class="text-light me-3">
+          مرحباً، {{ session.get('user_name') }}
+        </span>
+
+        <a href="{{ url_for('track_order') }}" class="btn btn-warning me-2">
+          🔍 تتبع الطلب
+        </a>
+
+        <a href="{{ url_for('user_logout') }}" class="btn btn-danger">
+          خروج
+        </a>
+      {% endif %}
+    </div>
+  </div>
+</nav>
+
+
+<div class="container mt-4">
+
+  <!-- نموذج البحث -->
+  <form method="POST" class="mb-4">
+    <div class="input-group">
+      <input 
+    type="text" 
+    name="search" 
+    class="form-control search-box" 
+    placeholder="ابحث عن الدواء"
+    value=""
+>
+
+      <button type="submit" class="btn btn-primary">
+        🔎 بحث
+      </button>
+    </div>
+  </form>
+
+
+  <!-- FLASH MESSAGES -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+{% for category, message in messages %}
+<div class="alert alert-{{ category }} text-center">
+{{ message }}
+</div>
+{% endfor %}
+{% endif %}
+{% endwith %}
+
+
+<!-- عرض الأدوية -->
+{% if drugs %}
+<div class="row">
+
+{% for d in drugs %}
+<div class="col-md-6 mb-4">
+
+<div class="card card-pharmacy shadow p-3">
+
+<h5 class="fw-bold">
+💊 {{ d.name }}
+</h5>
+
+<p class="text-success fw-bold">
+💰 {{ d.price }} ريال
+</p>
+
+<p>
+📦 الكمية المتوفرة: {{ d.quantity }}
+</p>
+
+<p>
+🏥 الصيدلية:
+<strong>
+{{ d.pharmacist.pharmacy_name if d.pharmacist else "غير معروف" }}
+</strong>
+</p>
+
+<p class="text-muted">
+📍 العنوان:
+{{ d.pharmacist.address if d.pharmacist else "غير متوفر" }}
+</p>
+
+
+{% if session.get('user_id') %}
+
+<button 
+class="btn btn-success w-100 mt-2"
+data-bs-toggle="modal"
+data-bs-target="#orderModal"
+onclick="setDrug('{{ d.id }}','{{ d.name }}','{{ d.price }}','{{ d.address }}','{{ d.quantity }}')"
+>
+🛒 احجز الآن
+</button>
+
+{% else %}
+
+<button 
+class="btn btn-success w-100 mt-2"
+onclick="alert('يرجى تسجيل الدخول أولاً'); window.location='{{ url_for('register_user') }}'"
+>
+🛒 احجز الآن
+</button>
+
+{% endif %}
+
+</div>
+
+</div>
+{% endfor %}
+
+</div>
+
+
+{% else %}
+
+<!-- لا توجد أدوية -->
+{% if not_found %}
+<div class="alert alert-warning text-center">
+
+<h5>
+❌ لم يتم العثور على الدواء "{{ search }}"
+</h5>
+
+<p>
+يمكنك طلب توفير هذا الدواء من جميع الصيدليات المسجلة
+</p>
+
+<form method="POST" action="{{ url_for('request_supply') }}">
+
+<input type="hidden" name="drug_name" value="{{ search }}">
+
+{% if session.get('user_phone') %}
+<input type="hidden" name="phone" value="{{ session.get('user_phone') }}">
+{% else %}
+
+<input 
+type="text" 
+name="phone" 
+class="form-control mb-2"
+placeholder="أدخل رقم هاتفك للتواصل"
+required
+>
+
+{% endif %}
+
+<button type="submit" class="btn btn-primary w-100">
+📦 طلب توفير الدواء
+</button>
+
+</form>
+
+</div>
+{% endif %}
+
+{% endif %}
+
+
+
+<!-- ORDER MODAL -->
+<div class="modal fade" id="orderModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content p-3">
+      <form method="POST" action="{{ url_for('new_order') }}">
+        <input type="hidden" name="drug_id" id="drug_id_input">
+        <input type="hidden" name="drug_name" id="drug_name_input">
+        <input type="hidden" name="drug_price" id="drug_price_input">
+        <input type="hidden" name="drug_quantity" id="drug_quantity_input">
+
+        <input type="text" name="name" class="form-control mb-2" placeholder="اسمك" required>
+        <input type="text" name="phone" class="form-control mb-2" placeholder="رقمك" required>
+        <input type="number" name="quantity" class="form-control mb-2" placeholder="الكمية" min="1" required>
+
+        <select name="delivery_type" class="form-control mb-2" onchange="toggleAddress(this)" required>
+          <option value="استلام">استلام من الصيدلية</option>
+          <option value="توصيل">توصيل للمنزل</option>
+        </select>
+
+        <div class="address-field" style="display:none;">
+          <input type="text" name="address" class="form-control mb-2" placeholder="اكتب عنوانك بالتفصيل">
+        </div>
+
+        <select name="payment_method" class="form-control mb-2" onchange="handlePayment(this)" required>
+          <option value="cash">نقداً عند الاستلام</option>
+          <option value="online">دفع إلكتروني</option>
+        </select>
+
+        <button class="btn btn-success w-100">تأكيد الطلب</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// تعيين بيانات الدواء عند فتح المودال
+function setDrug(id,name,price,quantity){
+  document.getElementById("drug_id_input").value = id;
+  document.getElementById("drug_name_input").value = name;
+  document.getElementById("drug_price_input").value = price;
+  document.getElementById("drug_quantity_input").value = quantity;
+}
+
+// عرض حقل العنوان عند اختيار التوصيل
+function toggleAddress(select){
+  let addressField = select.closest("form").querySelector(".address-field");
+  addressField.style.display = (select.value === "توصيل") ? "block" : "none";
+}
+
+// الدفع الإلكتروني يوجّه لصفحة /payment
+function handlePayment(select){
+  if(select.value === "online"){
+    alert("سيتم تحويلك إلى بوابة الدفع الإلكتروني");
+    // هنا ممكن ترسل البيانات للباك إند أو تحويل مباشر للـ payment
+    // window.location.href = "/payment";
+  }
+}
+</script>
+
+</body>
+</html>

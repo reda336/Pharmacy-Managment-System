@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>لوحة تحكم الادمن</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+</head>
+
+<body class="bg-light">
+
+<nav class="navbar navbar-dark bg-dark mb-4">
+<div class="container">
+<span class="navbar-brand">👑 لوحة الادمن</span>
+
+<a href="{{ url_for('index') }}" class="btn btn-danger">
+خروج
+</a>
+
+</div>
+</nav>
+
+<div class="container">
+
+<!-- ================= الصيادلة ================= -->
+
+<h4 class="mb-3">👨‍⚕️ طلبات الصيادلة</h4>
+
+<table class="table table-bordered bg-white text-center shadow">
+
+<thead class="table-dark">
+<tr>
+<th>البريد</th>
+<th>اسم الصيدلية</th>
+<th>الحالة</th>
+<th>تحكم</th>
+</tr>
+</thead>
+
+<tbody>
+
+{% for p in pharmacists %}
+
+<tr>
+<td>{{ p.email }}</td>
+<td>{{ p.pharmacy_name }}</td>
+
+<td>
+{% if p.approved %}
+<span class="badge bg-success">معتمد</span>
+{% else %}
+<span class="badge bg-warning">قيد الانتظار</span>
+{% endif %}
+</td>
+
+<td>
+
+<form method="POST" action="{{ url_for('approve_pharmacist') }}">
+
+<input type="hidden" name="pharmacist_id" value="{{ p.id }}">
+
+<button name="action" value="approve"
+class="btn btn-success btn-sm">
+قبول
+</button>
+
+<button name="action" value="reject"
+class="btn btn-danger btn-sm">
+رفض
+</button>
+
+</form>
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+</table>
+
+<hr>
+
+<!-- ================= الأدوية ================= -->
+
+<h4 class="mb-3">💊 الأدوية</h4>
+
+<table class="table table-striped bg-white text-center shadow">
+
+<thead class="table-dark">
+<tr>
+<th>الدواء</th>
+<th>السعر</th>
+<th>الكمية</th>
+<th>الصيدلي</th>
+</tr>
+</thead>
+
+<tbody>
+
+{% for d in drugs %}
+
+<tr>
+<td>{{ d.name }}</td>
+<td>{{ d.price }}</td>
+<td>{{ d.quantity }}</td>
+<td>{{ d.pharmacist.pharmacy_name }}</td>
+</tr>
+
+{% endfor %}
+
+</tbody>
+</table>
+
+<hr>
+
+<!-- ================= الطلبات ================= -->
+
+<h4 class="mb-3">📦 الطلبات</h4>
+
+<table class="table table-bordered bg-white text-center shadow">
+
+<thead class="table-dark">
+<tr>
+<th>الدواء</th>
+<th>الكمية</th>
+<th>الحالة</th>
+<th>المستخدم</th>
+<th>الصيدلي</th>
+</tr>
+</thead>
+
+<tbody>
+
+{% for o in orders %}
+
+<tr>
+<td>{{ o.drug.name }}</td>
+<td>{{ o.quantity }}</td>
+<td>
+<span class="badge bg-info">{{ o.status }}</span>
+</td>
+<td>{{ o.user.name }}</td>
+<td>{{ o.pharmacist.pharmacy_name }}</td>
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+</body>
+</html>
+
+
