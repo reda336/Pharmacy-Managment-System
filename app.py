@@ -766,7 +766,7 @@ def new_order():
         return redirect(url_for("online_payment", order_id=new_order.id))
 
     flash("✅ تم تأكيد الطلب بنجاح")
-    return redirect(url_for("track_order"))
+    return redirect(url_for("track_order", phone=user.phone))
 
 
 
@@ -796,9 +796,6 @@ def update_order_status():
 
 
 # ================= TRACK ORDER =================
-
-
-@app.route("/track_order", methods=["GET", "POST"])
 def track_order():
     orders = []
     phone = None
@@ -821,6 +818,9 @@ def track_order():
             flash("لم يتم العثور على أي طلبات بهذا الرقم.", "warning")
 
     return render_template("track_order.html", orders=orders, phone=phone)
+
+
+
 
 
 # ================= ADMIN LOGIN =================
