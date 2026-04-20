@@ -497,14 +497,21 @@ def approve_pharmacist():
     if not session.get("admin"):
         return redirect(url_for("admin_login"))
 
-    p = Pharmacist.query.get(request.form.get("pharmacist_id"))
+    pharmacist_id = request.form.get("pharmacist_id")
+    action = request.form.get("action")
 
-    if p:
-        p.approved = True if request.form.get("action") == "approve" else False
+    pharmacist = Pharmacist.query.get(pharmacist_id)
+
+    if pharmacist:
+
+        if action == "approve":
+            pharmacist.approved = True
+        elif action == "reject":
+            db.session.delete(pharmacist)  # أو تخليه False حسب رغبتك
+
         db.session.commit()
 
     return redirect(url_for("admin_dashboard"))
-
 
 @app.route("/update_drug", methods=["POST"])
 def update_drug():
@@ -766,7 +773,7 @@ def new_order():
         return redirect(url_for("online_payment", order_id=new_order.id))
 
     flash("✅ تم تأكيد الطلب بنجاح")
-    return redirect(url_for("track_order", phone=user.phone))
+    return redirect(url_for("track_order"))
 
 
 
@@ -796,7 +803,9 @@ def update_order_status():
 
 
 # ================= TRACK ORDER =================
+@app.route("/track_order", methods=["GET", "POST"])
 def track_order():
+
     orders = []
     phone = None
 
@@ -847,14 +856,18 @@ def admin_dashboard():
     if not session.get("admin"):
         return redirect(url_for("admin_login"))
 
+    pending_pharmacists = Pharmacist.query.filter_by(approved=False).all()
+    approved_pharmacists = Pharmacist.query.filter_by(approved=True).all()
+
     return render_template(
         "admin_dashboard.html",
-        pharmacists=Pharmacist.query.all(),
+        pending_pharmacists=pending_pharmacists,
+        approved_pharmacists=approved_pharmacists,
         drugs=Drug.query.all(),
         orders=Order.query.all()
     )
 
-# ================= Approve =================
+# =================  =================
 
 
 
