@@ -853,9 +853,7 @@ def admin_login():
 @app.route("/admin_dashboard")
 def admin_dashboard():
     if not session.get("admin"):
-        return redirect(url_for("admin_login"))
-    
-    # 
+        return redirect(url_for("admin_login") 
     all_pharmacists = Pharmacist.query.all() 
     
     return render_template(
@@ -863,7 +861,7 @@ def admin_dashboard():
         pharmacists=all_pharmacists,         
         drugs=Drug.query.all()
         orders=Order.query.all()
-    )
+    
 
 
 # =================  =================
