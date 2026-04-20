@@ -807,26 +807,35 @@ def update_order_status():
 def track_order():
 
     orders = []
-    phone = None
+    query = None
 
     if request.method == "POST":
-        phone = request.form.get("phone")
+        query = request.form.get("query", "").strip()
 
-        if not phone:
-            flash("يرجى إدخال رقم الهاتف!", "warning")
-            return render_template("track_order.html", orders=None, phone=phone)
+        if not query:
+            flash("أدخل رقم الهاتف أو رقم الطلب", "warning")
+            return render_template("track_order.html", orders=[], query=query)
 
-        # البحث عن المستخدم أولاً
-        user = User.query.filter_by(phone=phone).first()
+        # 🔹 البحث برقم الهاتف
+        user = User.query.filter_by(phone=query).first()
 
         if user:
-            # البحث عن الطلبات بواسطة user_id
-            orders = Order.query.filter_by(user_id=user.id).order_by(Order.created_at.desc()).all()
-        
-        if not orders:
-            flash("لم يتم العثور على أي طلبات بهذا الرقم.", "warning")
+            orders = Order.query.filter_by(user_id=user.id)\
+                .order_by(Order.created_at.desc()).all()
 
-    return render_template("track_order.html", orders=orders, phone=phone)
+        # 🔹 البحث برقم الفاتورة
+        elif query.isdigit():
+            orders = Order.query.filter_by(
+                invoice_number=int(query)
+            ).all()
+
+        else:
+            flash("لا يوجد مستخدم بهذا الرقم", "warning")
+
+        if request.method == "POST" and not orders:
+            flash("لم يتم العثور على طلبات", "warning")
+
+    return render_template("track_order.html", orders=orders, query=query)
 
 
 
