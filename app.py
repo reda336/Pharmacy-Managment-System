@@ -195,13 +195,14 @@ def index():
 
 # ================= DOWNLOAD INVOICE =================
 
-@app.route("/invoices/<filename>")
-def download_invoice(filename):
+@app.route("/download_invoice/<int:order_id>")
+def download_invoice(order_id):
 
-    return send_from_directory(
-        "invoices",
-        filename
-    )
+    order = Order.query.get_or_404(order_id)
+
+    filename = f"invoice_{order.invoice_number}.pdf"
+
+    return send_from_directory("invoices", filename)
 
 
 @app.route("/payment/<int:order_id>", methods=["GET", "POST"])
