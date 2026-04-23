@@ -965,22 +965,44 @@ def import_drugs():
         flash("❌ اختر ملف Excel")
         return redirect(url_for("pharmacist"))
 
+    if not file.filename.endswith(".xlsx"):
+        flash("❌ الملف لازم يكون Excel (.xlsx)")
+        return redirect(url_for("pharmacist"))
+
     try:
         df = pd.read_excel(file)
+
+        # تنظيف أسماء الأعمدة
+        df.columns = df.columns.str.strip().str.lower()
+
+        # التأكد من الأعمدة المطلوبة
+        required_cols = {"name", "price", "quantity"}
+
+        if not required_cols.issubset(df.columns):
+            flash("❌ الملف لازم يحتوي: name - price - quantity")
+            return redirect(url_for("pharmacist"))
 
         added = 0
         skipped = 0
 
         for _, row in df.iterrows():
 
-            name = str(row["name"]).strip()
-            price = float(row["price"])
-            quantity = int(row["quantity"])
+            # تجاهل الصفوف الفاضية
+            if pd.isna(row["name"]) or pd.isna(row["price"]) or pd.isna(row["quantity"]):
+                continue
 
-            # التحقق من التكرار
-            existing = Drug.query.filter_by(
-                name=name,
-                pharmacist_id=session["pharmacist_id"]
+            name = str(row["name"]).strip().lower()
+
+            try:
+                price = float(row["price"])
+                quantity = int(row["quantity"])
+            except:
+                continue
+
+            # البحث عن الدواء (بدون حساسية لحروف كبيرة/صغيرة)
+            existing = Drug.query.filter(
+                Drug.name.ilike(name),
+                Drug.pharmacist_id == session["pharmacist_id"]
             ).first()
 
             if existing:
@@ -994,6 +1016,19 @@ def import_drugs():
                 pharmacist_id=session["pharmacist_id"],
                 available=True
             )
+
+            db.session.add(drug)
+            added += 1
+
+        db.session.commit()
+
+        flash(f"✅ تم إضافة {added} دواء | تم تجاهل {skipped} مكرر")
+
+    except Exception as e:
+        db.session.rollback()
+        flash(f"❌ خطأ في الملف: {str(e)}")
+
+    return redirect(url_for("pharmacist"))
 
             db.session.add(drug)
             added += 1
