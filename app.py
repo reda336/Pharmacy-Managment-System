@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+
 from flask import Flask, render_template, request, redirect, url_for, flash, session, send_file, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash,check_password_hash
@@ -21,9 +21,12 @@ from reportlab.lib.pagesizes import A4
 app = Flask(__name__)
 app.secret_key = "pharmacy_secret_999"
 
+uri = os.environ.get("DATABASE_URL", "sqlite:///pharmacy.db")
 
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+if uri.startswith("postgres://"):
+    uri = uri.replace("postgres://", "postgresql://", 1)
+
+app.config["SQLALCHEMY_DATABASE_URI"] = uriapp.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
 
