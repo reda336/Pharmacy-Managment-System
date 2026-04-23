@@ -41,7 +41,6 @@ body{
 
 <body>
 
-
 <!-- NAVBAR -->
 <nav class="navbar navbar-dark bg-success shadow mb-4">
 <div class="container">
@@ -52,57 +51,39 @@ body{
 
 <div>
 
-<a href="{{ url_for('pharmacist_orders') }}"
-class="btn btn-warning position-relative me-2">
-
+<a href="{{ url_for('pharmacist_orders') }}" class="btn btn-warning position-relative me-2">
 📦 الطلبات
-
 {% if notifications_orders > 0 %}
 <span class="position-absolute top-0 start-100 translate-middle badge bg-danger">
 {{ notifications_orders }}
 </span>
 {% endif %}
-
 </a>
 
-
-<a href="{{ url_for('supply_requests') }}"
-class="btn btn-dark position-relative me-2">
-
+<a href="{{ url_for('supply_requests') }}" class="btn btn-dark position-relative me-2">
 🧾 طلبات التوفير
-
 {% if notifications_supply > 0 %}
 <span class="position-absolute top-0 start-100 translate-middle badge bg-danger">
 {{ notifications_supply }}
 </span>
 {% endif %}
-
 </a>
 
-<a href="{{ url_for('reports') }}"
-class="btn btn-light">
+<a href="{{ url_for('reports') }}" class="btn btn-light">
 📊 التقارير المالية
 </a>
-<div style="margin: 15px 0; padding: 10px; border: 1px solid #ccc;">
-     <h4>استيراد أدوية  Excel</h4>
 
-    <form action="/import_drugs" method="POST" enctype="multipart/form-data">
-        <input type="file" name="file" accept=".xlsx" required>
-        <button type="submit">رفع الملف</button>
-    </form>
-</div>
-<a href="{{ url_for('logout') }}"
-class="btn btn-danger">
+<a href="{{ url_for('logout') }}" class="btn btn-danger">
 🚪 خروج
 </a>
 
 </div>
+
 </div>
 </nav>
 
 
 <div class="container">
-
 
 <!-- إضافة دواء -->
 <div class="card p-4 shadow mb-4">
@@ -113,21 +94,11 @@ class="btn btn-danger">
 
 <form method="POST">
 
-<input name="name"
-class="form-control mb-2"
-placeholder="اسم الدواء"
-required>
+<input name="name" class="form-control mb-2" placeholder="اسم الدواء" required>
 
-<input name="price"
-class="form-control mb-2"
-placeholder="السعر"
-required>
+<input name="price" class="form-control mb-2" placeholder="السعر" required>
 
-<input name="quantity"
-type="number"
-class="form-control mb-3"
-placeholder="الكمية"
-required>
+<input name="quantity" type="number" class="form-control mb-3" placeholder="الكمية" required>
 
 <button class="btn btn-green w-100">
 إضافة الدواء
@@ -138,6 +109,31 @@ required>
 </div>
 
 
+<!-- 🔥 إضافة Excel (بدون حذف أي شيء من مشروعك) -->
+<div class="card p-4 shadow mb-4">
+
+<h4 class="text-center text-primary mb-3">
+📥 استيراد أدوية من Excel
+</h4>
+
+<form action="/import_drugs" method="POST" enctype="multipart/form-data">
+
+<input type="file" name="file" accept=".xlsx" class="form-control mb-2" required>
+
+<button class="btn btn-primary w-100">
+رفع الملف
+</button>
+
+</form>
+
+<small class="text-muted text-center d-block mt-2">
+📌 الأعمدة المطلوبة: name - price - quantity
+</small>
+
+</div>
+
+
+<!-- الرسائل -->
 {% with messages = get_flashed_messages(with_categories=true) %}
 {% for category, message in messages %}
 
@@ -147,7 +143,6 @@ required>
 
 {% endfor %}
 {% endwith %}
-
 
 
 <!-- البحث -->
@@ -164,7 +159,6 @@ value="{{ search or '' }}">
 </button>
 
 </form>
-
 
 
 <!-- قائمة الأدوية -->
@@ -202,48 +196,30 @@ value="{{ search or '' }}">
 <td>
 
 {% if d.quantity < 10 %}
-
-<span class="low-stock">
-⚠ {{ d.quantity }} (مخزون منخفض)
-</span>
-
+<span class="low-stock">⚠ {{ d.quantity }} (مخزون منخفض)</span>
 {% else %}
-
 {{ d.quantity }}
-
 {% endif %}
 
 </td>
 
-
 <td>
 
-<!-- تعديل الكمية -->
 <form method="POST" action="{{ url_for('update_drug') }}" class="d-inline">
 
 <input type="hidden" name="drug_id" value="{{ d.id }}">
 
-<input name="quantity"
-type="number"
-class="form-control form-control-sm mb-1"
-placeholder="تعديل الكمية"
-required>
+<input name="quantity" type="number" class="form-control form-control-sm mb-1" required>
 
-<button class="btn btn-sm btn-success">
-تحديث
-</button>
+<button class="btn btn-sm btn-success">تحديث</button>
 
 </form>
 
-
-<!-- حذف -->
 <form method="POST" action="{{ url_for('delete_drug') }}" class="d-inline">
 
 <input type="hidden" name="drug_id" value="{{ d.id }}">
 
-<button class="btn btn-sm btn-danger">
-حذف
-</button>
+<button class="btn btn-sm btn-danger">حذف</button>
 
 </form>
 
