@@ -83,7 +83,14 @@ class="btn btn-dark position-relative me-2">
 class="btn btn-light">
 📊 التقارير المالية
 </a>
+<div style="margin: 15px 0; padding: 10px; border: 1px solid #ccc;">
+     <h4>استيراد أدوية  Excel</h4>
 
+    <form action="/import_drugs" method="POST" enctype="multipart/form-data">
+        <input type="file" name="file" accept=".xlsx" required>
+        <button type="submit">رفع الملف</button>
+    </form>
+</div>
 <a href="{{ url_for('logout') }}"
 class="btn btn-danger">
 🚪 خروج
