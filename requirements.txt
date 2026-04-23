@@ -1,8 +1,9 @@
-flask
-flask-sqlalchemy
+
+Flask
+Flask-SQLAlchemy
 pandas
 openpyxl
 reportlab
-werkzeug
+Werkzeug
 gunicorn
 psycopg2-binary
