@@ -967,7 +967,6 @@ def admin_logout():
     session.clear()
     return redirect(url_for("admin_login"))
 
-
 # ===== تشغيل التطبيق محليًا فقط =====
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
