@@ -1,4 +1,3 @@
-
 from flask import Flask, render_template, request, redirect, url_for, flash, session, send_file, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash,check_password_hash
@@ -39,20 +38,7 @@ db = SQLAlchemy(app)
 
 # --- تعريف النماذج (Models) تظل كما هي في مشروعك ---
 
-@app.route("/", methods=["GET"])
-def index():
-    # 2. إصلاح منطق البحث ليتوافق مع طريقة GET
-    search = request.args.get("search", "") 
-    
-    if search:
-        # البحث عن الأدوية بناءً على الاسم
-        drugs = Drug.query.filter(Drug.name.contains(search)).all()
-    else:
-        drugs = Drug.query.all()
-        
-    return render_template("index.html", drugs=drugs)
 
-# بقية المسارات (Routes) الخاصة بالصيدلي والطلبات...
 
 
 
