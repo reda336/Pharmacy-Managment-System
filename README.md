@@ -30,5 +30,5 @@ The codebase is optimized for stability on cloud platforms:
  * models.py: Defines the database schema (Medications, Orders, Pharmacy Profiles).
  * templates/: Contains all UI components and frontend layouts.
  * requirements.txt: Lists all dependencies required to run the project.
-**2026 All Rights Reserved**
+
 
