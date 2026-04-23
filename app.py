@@ -19,11 +19,41 @@ from reportlab.lib.pagesizes import A4
 # ================= APP =================
 
 
+
+
 app = Flask(__name__)
 app.secret_key = "pharmacy_secret_999"
 
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///pharmacy.db"
+# 1. إصلاح الربط بقاعدة البيانات (يدعم التبديل التلقائي)
+# يحاول جلب DATABASE_URL من Render، وإذا لم يجده يستخدم SQLite محلياً
+uri = os.environ.get("DATABASE_URL", "sqlite:///pharmacy.db")
+
+# تصحيح بروتوكول Postgres ليتوافق مع SQLAlchemy الحديثة
+if uri and uri.startswith("postgres://"):
+    uri = uri.replace("postgres://", "postgresql://", 1)
+
+app.config["SQLALCHEMY_DATABASE_URI"] = uri
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+db = SQLAlchemy(app)
+
+# --- تعريف النماذج (Models) تظل كما هي في مشروعك ---
+
+@app.route("/", methods=["GET"])
+def index():
+    # 2. إصلاح منطق البحث ليتوافق مع طريقة GET
+    search = request.args.get("search", "") 
+    
+    if search:
+        # البحث عن الأدوية بناءً على الاسم
+        drugs = Drug.query.filter(Drug.name.contains(search)).all()
+    else:
+        drugs = Drug.query.all()
+        
+    return render_template("index.html", drugs=drugs)
+
+# بقية المسارات (Routes) الخاصة بالصيدلي والطلبات...
+
 
 
 # ================= MODELS =================
