@@ -18,13 +18,13 @@ from reportlab.lib.pagesizes import A4
 
 # ================= APP =================
 
+
 app = Flask(__name__)
 app.secret_key = "pharmacy_secret_999"
 
 uri = os.environ.get("DATABASE_URL", "sqlite:///pharmacy.db")
-uri = os.environ.get("DATABASE_URL", "sqlite:///pharmacy.db")
 
-if uri and uri.startswith("postgres://"):
+if uri.startswith("postgres://"):
     uri = uri.replace("postgres://", "postgresql://", 1)
 
 app.config["SQLALCHEMY_DATABASE_URI"] = uri
