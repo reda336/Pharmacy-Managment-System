@@ -953,6 +953,10 @@ def login_user():
         return redirect(url_for("index"))
 
     return render_template("login_user.html")
+
+
+
+
 @app.route("/import_drugs", methods=["POST"])
 def import_drugs():
 
@@ -972,12 +976,10 @@ def import_drugs():
     try:
         df = pd.read_excel(file)
 
-        # تنظيف أسماء الأعمدة
+        # تنظيف الأعمدة
         df.columns = df.columns.str.strip().str.lower()
 
-        # التأكد من الأعمدة المطلوبة
         required_cols = {"name", "price", "quantity"}
-
         if not required_cols.issubset(df.columns):
             flash("❌ الملف لازم يحتوي: name - price - quantity")
             return redirect(url_for("pharmacist"))
@@ -987,11 +989,10 @@ def import_drugs():
 
         for _, row in df.iterrows():
 
-            # تجاهل الصفوف الفاضية
             if pd.isna(row["name"]) or pd.isna(row["price"]) or pd.isna(row["quantity"]):
                 continue
 
-            name = str(row["name"]).strip().lower()
+            name = str(row["name"]).strip()
 
             try:
                 price = float(row["price"])
@@ -999,10 +1000,10 @@ def import_drugs():
             except:
                 continue
 
-            # البحث عن الدواء (بدون حساسية لحروف كبيرة/صغيرة)
-            existing = Drug.query.filter(
-                Drug.name.ilike(name),
-                Drug.pharmacist_id == session["pharmacist_id"]
+            # منع التكرار
+            existing = Drug.query.filter_by(
+                name=name,
+                pharmacist_id=session["pharmacist_id"]
             ).first()
 
             if existing:
@@ -1029,21 +1030,6 @@ def import_drugs():
         flash(f"❌ خطأ في الملف: {str(e)}")
 
     return redirect(url_for("pharmacist"))
-
-            db.session.add(drug)
-            added += 1
-
-        db.session.commit()
-
-        flash(f"✅ تم إضافة {added} دواء | تم تجاهل {skipped} مكرر")
-
-    except Exception as e:
-        db.session.rollback()
-        flash(f"❌ خطأ في الملف: {str(e)}")
-
-    return redirect(url_for("pharmacist"))
-
-
 
 # ================= تسجيل الخروج =================
 @app.route("/user_logout")
