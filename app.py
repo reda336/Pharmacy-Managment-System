@@ -953,6 +953,62 @@ def login_user():
         return redirect(url_for("index"))
 
     return render_template("login_user.html")
+@app.route("/import_drugs", methods=["POST"])
+def import_drugs():
+
+    if "pharmacist_id" not in session:
+        return redirect(url_for("login"))
+
+    file = request.files.get("file")
+
+    if not file:
+        flash("❌ اختر ملف Excel")
+        return redirect(url_for("pharmacist"))
+
+    try:
+        df = pd.read_excel(file)
+
+        added = 0
+        skipped = 0
+
+        for _, row in df.iterrows():
+
+            name = str(row["name"]).strip()
+            price = float(row["price"])
+            quantity = int(row["quantity"])
+
+            # التحقق من التكرار
+            existing = Drug.query.filter_by(
+                name=name,
+                pharmacist_id=session["pharmacist_id"]
+            ).first()
+
+            if existing:
+                skipped += 1
+                continue
+
+            drug = Drug(
+                name=name,
+                price=price,
+                quantity=quantity,
+                pharmacist_id=session["pharmacist_id"],
+                available=True
+            )
+
+            db.session.add(drug)
+            added += 1
+
+        db.session.commit()
+
+        flash(f"✅ تم إضافة {added} دواء | تم تجاهل {skipped} مكرر")
+
+    except Exception as e:
+        db.session.rollback()
+        flash(f"❌ خطأ في الملف: {str(e)}")
+
+    return redirect(url_for("pharmacist"))
+
+
 
 # ================= تسجيل الخروج =================
 @app.route("/user_logout")
