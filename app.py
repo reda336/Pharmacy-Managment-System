@@ -159,7 +159,7 @@ from sqlalchemy import and_
 @app.route("/", methods=["GET"])
 def index():
     # ===== البحث عن دواء =====
-    search = request.form.get("search")  # لأن النموذج POST
+    search = request.args.get("search")  # لأن النموذج POST
 
     if search:
         drugs = Drug.query.filter(
