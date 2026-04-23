@@ -963,20 +963,12 @@ def logout():
 
 
 @app.route("/admin_logout")
-
-
-if __name__ == "__main__":
-    import os
-
-    port = int(os.environ.get("PORT", 5000))
-
-    app.run(host="0.0.0.0", port=port)
 def admin_logout():
     session.clear()
     return redirect(url_for("admin_login"))
 
-if __name__ == "__main__":
-    # Render يرسل المنفذ عبر متغير بيئة يسمى PORT
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
 
+# ===== تشغيل التطبيق محليًا فقط =====
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
