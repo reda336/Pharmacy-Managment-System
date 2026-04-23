@@ -156,7 +156,7 @@ with app.app_context():
 from flask import request, render_template, session
 from sqlalchemy import and_
 
-@app.route("/", methods=["GET", "POST"])
+@app.route("/", methods=["GET"])
 def index():
     # ===== البحث عن دواء =====
     search = request.form.get("search")  # لأن النموذج POST
